@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>&lt;no title&gt; &#8212; Spatial Proteomics Workshop 2026</title>
+    <title>Exercise 3: Technical foundations of digital pathology &#8212; Spatial Proteomics Workshop 2026</title>
   
   
   
@@ -65,6 +65,7 @@ const thebe_selector_output = ".output, .cell_output"
     <script>DOCUMENTATION_OPTIONS.pagename = 'exercise3';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Exercise 2: Biological interpretation &amp; cell phenotyping" href="exercise2.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -127,8 +128,6 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-        
-      
       <div class="bd-sidebar-primary bd-sidebar">
         
 
@@ -167,9 +166,10 @@ const thebe_selector_output = ".output, .cell_output"
                 </a>
             </li>
         </ul>
-        <ul class="nav bd-sidenav">
+        <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="exercise1.html">Exercise 1: Technical foundations of digital pathology</a></li>
 <li class="toctree-l1"><a class="reference internal" href="exercise2.html">Exercise 2: Biological interpretation &amp; cell phenotyping</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Exercise 3: Technical foundations of digital pathology</a></li>
 </ul>
 
     </div>
@@ -308,7 +308,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1><no title></h1>
+    <h1>Exercise 3: Technical foundations of digital pathology</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -317,9 +317,16 @@ document.write(`
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="simple visible nav section-nav flex-column">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-dataset">Loading dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phenotyping-with-scimap">Phenotyping with Scimap</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-rescaling-and-gating">Step 1: Rescaling and Gating</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-apply-phenotype-workflow">Step 2: Apply Phenotype Workflow</a></li>
 </ul>
-
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-metrics-interactions-neighborhoods">Spatial Metrics (interactions &amp; neighborhoods)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tissue-domains-with-utag">Tissue Domains with UTAG</a></li>
+</ul>
             </nav>
         </div>
     </div>
@@ -330,7 +337,104 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  
+  <section class="tex2jax_ignore mathjax_ignore" id="exercise-3-technical-foundations-of-digital-pathology">
+<h1>Exercise 3: Technical foundations of digital pathology<a class="headerlink" href="#exercise-3-technical-foundations-of-digital-pathology" title="Permalink to this heading">#</a></h1>
+<p>In this exercise, we transition from viewing images to analyzing the “Social Network of Cells.” We will use Scimap for phenotyping and interactions, and UTAG to discover tissue domains.</p>
+<div class="admonition-pre-requisites admonition">
+<p class="admonition-title">Pre-requisites</p>
+<p>Ensure you have activated your environment and have the following packages:
+pip install scimap utag anndata scanpy</p>
+</div>
+<section id="loading-dataset">
+<h2>Loading dataset<a class="headerlink" href="#loading-dataset" title="Permalink to this heading">#</a></h2>
+<p>Before analyzing space, we must ensure our data table has the “Minimum Viable Columns.”</p>
+<p>Task: Load your dataset and verify the following fields:</p>
+<ul class="simple">
+<li><p>X, Y coordinates: Usually in <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">adata.obsm['spatial']</span></code>.</p></li>
+<li><p>Marker Matrix: Expression levels for each protein per cell.</p></li>
+<li><p>ROI/ImageID: To separate different tissue samples.</p></li>
+</ul>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Question for the group: Thinking about your own research project, what is one spatial hypothesis you’d test? (e.g., “Are T-cells closer to the tumor in Responders vs. Non-responders?”)</p>
+</div>
+</section>
+<section id="phenotyping-with-scimap">
+<h2>Phenotyping with Scimap<a class="headerlink" href="#phenotyping-with-scimap" title="Permalink to this heading">#</a></h2>
+<p>We use a “Prior-Knowledge” approach. Instead of unsupervised clustering, we tell the computer what a T-cell looks like based on markers we know.</p>
+<section id="step-1-rescaling-and-gating">
+<h3>Step 1: Rescaling and Gating<a class="headerlink" href="#step-1-rescaling-and-gating" title="Permalink to this heading">#</a></h3>
+<p>Scimap expects data to be rescaled (usually 0 to 1) to make gating consistent across markers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">scimap</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+
+<span class="c1"># Load your AnnData object</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">read_h5ad</span><span class="p">(</span><span class="s1">&#39;lung_cancer_data.h5ad&#39;</span><span class="p">)</span>
+
+<span class="c1"># Rescale data</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">rescale</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">gate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="step-2-apply-phenotype-workflow">
+<h3>Step 2: Apply Phenotype Workflow<a class="headerlink" href="#step-2-apply-phenotype-workflow" title="Permalink to this heading">#</a></h3>
+<p>We use a CSV table that defines our cell types (e.g., T-cell = CD3+, CD8-).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run phenotyping</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">phenotype_cells</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">phenotype_method</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> 
+                              <span class="n">label</span><span class="o">=</span><span class="s1">&#39;phenotype&#39;</span><span class="p">)</span>
+
+<span class="c1"># Quick Visual QC</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial_scatter</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;phenotype&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><em>Task</em>: Check your phenotype counts.
+<em>Question</em>: Which phenotype here is most sensitive to threshold choice, and why?</p>
+</div>
+</section>
+</section>
+<section id="spatial-metrics-interactions-neighborhoods">
+<h2>Spatial Metrics (interactions &amp; neighborhoods)<a class="headerlink" href="#spatial-metrics-interactions-neighborhoods" title="Permalink to this heading">#</a></h2>
+<p>Metric A: Cell–Cell Interaction</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Quantify adjacency enrichment (Permutation test)</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">spatial_interaction</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;phenotype&#39;</span><span class="p">)</span>
+
+<span class="c1"># Visualize significance heatmap</span>
+<span class="n">sm</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial_interaction</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">binary_view</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Metric B: Neighborhood Composition</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute neighborhood proportions</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">sm</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">spatial_count</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">x_coordinate</span><span class="o">=</span><span class="s1">&#39;X_centroid&#39;</span><span class="p">,</span> <span class="n">y_coordinate</span><span class="o">=</span><span class="s1">&#39;Y_centroid&#39;</span><span class="p">,</span> 
+                            <span class="n">radius</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;phenotype&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Question: If you double the radius from 50μm to 100μm, which biology becomes more visible vs. less specific?</p>
+</div>
+</section>
+<section id="tissue-domains-with-utag">
+<h2>Tissue Domains with UTAG<a class="headerlink" href="#tissue-domains-with-utag" title="Permalink to this heading">#</a></h2>
+<p>While Part 2 looks at individual cell neighbors, UTAG looks at the “Microanatomical Domains” (e.g., Stroma vs. Tumor Nest) by combining phenotypes with a graph-based approach.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">utag</span>
+
+<span class="c1"># Run UTAG to find microanatomical domains</span>
+<span class="c1"># max_dist defines the &#39;reach&#39; of the adjacency graph</span>
+<span class="n">adata</span> <span class="o">=</span> <span class="n">utag</span><span class="o">.</span><span class="n">utag</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> 
+                  <span class="n">data_key</span><span class="o">=</span><span class="s1">&#39;X&#39;</span><span class="p">,</span> 
+                  <span class="n">cluster_key</span><span class="o">=</span><span class="s1">&#39;phenotype&#39;</span><span class="p">,</span> 
+                  <span class="n">max_dist</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> 
+                  <span class="n">resolutions</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+
+<span class="c1"># Plot the discovered domains</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;UTAG_label_res_0.1&#39;</span><span class="p">,</span> <span class="n">spot_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
     <script type="text/x-thebe-config">
     {
         requestKernel: true,
@@ -361,6 +465,15 @@ document.write(`
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
+    <a class="left-prev"
+       href="exercise2.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Exercise 2: Biological interpretation &amp; cell phenotyping</p>
+      </div>
+    </a>
 </div>
                 </footer>
               
@@ -376,9 +489,16 @@ document.write(`
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav class="bd-toc-nav page-toc">
-    <ul class="simple visible nav section-nav flex-column">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-dataset">Loading dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#phenotyping-with-scimap">Phenotyping with Scimap</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-rescaling-and-gating">Step 1: Rescaling and Gating</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-apply-phenotype-workflow">Step 2: Apply Phenotype Workflow</a></li>
 </ul>
-
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#spatial-metrics-interactions-neighborhoods">Spatial Metrics (interactions &amp; neighborhoods)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tissue-domains-with-utag">Tissue Domains with UTAG</a></li>
+</ul>
   </nav></div>
 
 </div></div>
