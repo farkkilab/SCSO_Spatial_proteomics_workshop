@@ -21,17 +21,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install jupyter-book
-          # If you have a requirements.txt, uncomment the line below:
-          # pip install -r requirements.txt
+          pip install jupyter-book==0.15.1
+          pip install sphinx-book-theme myst-parser
 
       - name: Build the book
         run: |
-          jupyter-book build .
-
-      - name: List built files (Debug)
-        run: |
-          ls -R _build/html
+          python -m jupyter_book build .
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
