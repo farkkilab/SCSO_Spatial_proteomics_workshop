@@ -3,7 +3,7 @@ name: deploy-book
 on:
   push:
     branches:
-      - main
+      - main  # Set this to 'master' if your repo uses that name
 
 permissions:
   contents: write
@@ -12,7 +12,8 @@ jobs:
   deploy-book:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -21,12 +22,19 @@ jobs:
 
       - name: Install dependencies
         run: |
+          # We pin version 0.15.1 to avoid the Node.js/EISDIR directory scanning bug
           pip install jupyter-book==0.15.1
           pip install sphinx-book-theme myst-parser
 
       - name: Build the book
-              run: |
-                jupyter-book build .
+        run: |
+          # Standard Python-based build command
+          jupyter-book build .
+
+      - name: List built files (Debug)
+        run: |
+          # This confirms the HTML files exist before we try to deploy
+          ls -R _build/html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
