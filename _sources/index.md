@@ -17,7 +17,7 @@ By the end of this workshop, you will be able to:
 * **Assess Data Quality:** Identify bit depth, pixel-to-micron scales, and the impact of signal aggregation.
 * **Identify Phenotypes:** Relate staining patterns to cell morphology and distinguish between lineage and functional markers.
 * **Measure Social Distance of Cells**: Quantify the spatial proximity between immune cells and tumor nests to assess infiltration.
-* **Map Regional Communities (RCNs)**: Use k-means clustering to identify the Tumor-Stromal Interface (TSI).
+* **Map Recurrent Cellular Neighbourhoods (RCNs)**: Use k-means clustering to identify the Tumor-Stromal Interface (TSI).
 * **Automate Domain Discovery**: Apply UTAG to identify unsupervised architectural neighborhoods across different samples.
 
 ---
