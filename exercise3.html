@@ -754,7 +754,7 @@ Step 6 → Map Cell Neighbourhoods
 <li><p>A <strong>left-shifted</strong> distance distribution (peak at short distances) means immune cells are <strong>physically close</strong> to tumour cells — consistent with active infiltration.</p></li>
 <li><p>A <strong>right-shifted</strong> distribution (peak at longer distances) suggests immune cells are present in the tissue but <strong>excluded</strong> from the tumour.</p></li>
 </ul>
-<div class="tip admonition">
+<div class="admonition-before-running-the-code admonition">
 <p class="admonition-title"><strong>Before running the code:</strong></p>
 <p>Predict which core you think will show greater immune–tumour proximity, based on the spatial maps you examined in Step 4.</p>
 </div>
@@ -814,7 +814,7 @@ Step 6 → Map Cell Neighbourhoods
 </div>
 </div>
 <div class="tip admonition">
-<p class="admonition-title">🔬 The Proximity Test</p>
+<p class="admonition-title">TASK</p>
 <p>Examine the Cancer → Lymphoid distance distribution above and answer:</p>
 <ol class="arabic simple">
 <li><p><strong>The “Close Contact” Peak:</strong> Which core has a higher density of Lymphoid cells at very short distances from Cancer cells?</p></li>
@@ -837,8 +837,8 @@ Step 6 → Map Cell Neighbourhoods
 <li><p>Use <strong>k-means clustering</strong> on these neighbourhood profiles to group cells with similar local environments</p></li>
 <li><p>Assign biological names to each cluster based on its dominant cell types</p></li>
 </ol>
-<div class="note admonition">
-<p class="admonition-title">Predict Before You Compute</p>
+<div class="admonition-predict-before-you-compute admonition">
+<p class="admonition-title">Predict before you compute</p>
 <p>Before running the code, think: <strong>what distinct neighbourhoods would you expect to find in a tumour microenvironment?</strong> For example:</p>
 <ul class="simple">
 <li><p>Pure tumour cores?</p></li>
